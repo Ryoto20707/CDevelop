@@ -45,10 +45,11 @@ void myTimerFunc(int value)
 	}
 	int bt = 0;
 	for(i=0;i<beltindex;i++){
-		if(belt[i][0]<x&&x<belt[i][1]&&belt[i][2]<y&&y<belt[i][3]) bt = i;
+		if(belt[i][X_FROM]<x&&x<belt[i][X_TO]&&belt[i][Y_FROM]<y&&y<belt[i][Y_TO]) bt = i;
 	}
-	int bt_direction = (int)belt[bt][5];
+	int bt_direction = (int)belt[bt][DIRECTION];
 
+	// 上キー
 	if (mySpecialValue & (1 << 0))
 	{
 		y += friction[fric][4];
@@ -56,6 +57,8 @@ void myTimerFunc(int value)
 		//ここを変更する
 		if (Y*L < y - MARGIN)y -= friction[fric][4];
 	}
+
+	// 左キー
 	if (mySpecialValue & (1 << 1))
 	{
 		x -= friction[fric][4];
@@ -63,6 +66,8 @@ void myTimerFunc(int value)
 		//ここを変更する
 		if (0 * L > x + MARGIN)x += friction[fric][4];
 	}
+
+	// 右キー
 	if (mySpecialValue & (1 << 2))
 	{
 		x += friction[fric][4];
@@ -70,6 +75,8 @@ void myTimerFunc(int value)
 		//ここを変更する
 		if ((X - 1)*L < x - MARGIN)x -= friction[fric][4];
 	}
+
+	// 下キー
 	if (mySpecialValue & (1 << 3))
 	{
 		y -= friction[fric][4];
@@ -78,6 +85,7 @@ void myTimerFunc(int value)
 		if (0 * L > y + MARGIN)y += friction[fric][4];
 	}
 
+	// 重力
 	if (z > 0)
 	{
 		v -= 0.01;
@@ -94,17 +102,19 @@ void myTimerFunc(int value)
 		}
 	}
 
-	if(bt_direction==1){
-		x += belt[bt][4];
-		if (collision())x -= belt[bt][4];
+	// ベルトコンベア
+	if(bt_direction==X_DIR){
+		x += belt[bt][SPEED];
+		if (collision())x -= belt[bt][SPEED];
 		//ここを変更する
-		if ((X - 1)*L < x - MARGIN)x -= belt[bt][4];
-	}else if(bt_direction==2){
-		y += belt[bt][4];
-		if (collision())y -= belt[bt][4];
+		if ((X - 1)*L < x - MARGIN)x -= belt[bt][SPEED];
+	}else if(bt_direction==Y_DIR){
+		y += belt[bt][SPEED];
+		if (collision())y -= belt[bt][SPEED];
 		//ここを変更する
-		if (Y*L < y - MARGIN)y -= belt[bt][4];
+		if (Y*L < y - MARGIN)y -= belt[bt][SPEED];
 	}
+	if(y>Y-MARGIN) gameClear();
 
 	//視点を移動
 	glLoadIdentity();
@@ -125,6 +135,7 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 		break;
 	}
 }
+
 void mySpcialFunc(int key, int x, int y)
 {
 	switch (key)
