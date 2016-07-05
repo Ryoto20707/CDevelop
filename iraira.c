@@ -14,18 +14,21 @@ void timeKeeper(); //制限時間を管理する
 void gameover(); //ゲームオーバーにする
 void gameClear(); //クリア処理をする
 
+int jumpflag = 0;
+
 
 int collision()
 {
 	//衝突判定
 	int i;
 	double MARGIN = 0.05;
-	if (z > 1)return 0;
+	//if (z > 1)return 0;
 	for (i = 0; i < tekiIndex; i++)
 	{
 		//簡単な衝突判定
 		if ((tekiList[i][0] - x <1 - MARGIN) && (tekiList[i][0] - x >-1 + MARGIN)
-			&& (tekiList[i][1] - y <1 - MARGIN) && (tekiList[i][1] - y >-1 + MARGIN))
+			&& (tekiList[i][1] - y <1 - MARGIN) && (tekiList[i][1] - y >-1 + MARGIN)
+			&& (tekiList[i][2] - z <1 - MARGIN) && (tekiList[i][2] - z >-1 + MARGIN))
 		{
 			//printf("(%.02f,%.02f):(%.02f,%.02f)\n", x, y, tekiList[i][0], tekiList[i][1]);
 			gameover();
@@ -87,7 +90,7 @@ void myTimerFunc(int value)
 	}
 
 	// 重力
-	if (z > 0)
+	if (jumpflag == 1 && z > 0)
 	{
 		v -= 0.01;
 		z += v;
@@ -100,6 +103,7 @@ void myTimerFunc(int value)
 		{
 			z = 0;
 			v = 0;
+			jumpflag = 0;
 		}
 	}
 
@@ -130,9 +134,11 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case ' ':
-		//ここを変更する
-		v = 0.2;
-		z += v;
+		if(jumpflag == 0){
+			jumpflag  = 1;
+			v = 0.2;
+			z += v;
+		}
 		break;
 	}
 }
@@ -190,7 +196,7 @@ void display(void)
 
 	glPopMatrix();
 	glutSwapBuffers();
-	timeKeeper();
+	//timeKeeper();
 }
 
 
