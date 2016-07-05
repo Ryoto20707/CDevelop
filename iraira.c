@@ -12,6 +12,7 @@ void init();
 void replay(); //プレイヤーを初期位置に戻す
 void timeKeeper(); //制限時間を管理する
 void gameover(); //ゲームオーバーにする
+void gameClear(); //クリア処理をする
 
 
 int collision()
@@ -237,7 +238,9 @@ void gameover(){
 	replay();
 }
 
-
+void gameClear() {
+	// game clear process
+}
 
 int main(int argc, char *argv[])
 {	
