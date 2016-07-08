@@ -1,5 +1,10 @@
 #include <time.h>
+#include <string.h>
 #include "map.c"
+
+#define WINDOW_WIDTH 400
+#define WINDOW_HEIGHT 400
+#define FONT GLUT_BITMAP_9_BY_15
 
 int collision(); //衝突判定
 void myTimerFunc(int value); //プレイヤーを動かす
@@ -13,7 +18,9 @@ void replay(); //プレイヤーを初期位置に戻す
 void timeKeeper(); //制限時間を管理する
 void gameover(); //ゲームオーバーにする
 void gameClear(); //クリア処理をする
+void drawString(); //文字列の描画
 
+char message[36] = "Start!"; // メッセージエリアに表示する文字列
 
 int collision()
 {
@@ -187,6 +194,7 @@ void display(void)
 	drawGround();
 	drawJiki();
 	drawTeki();
+	drawString();
 
 	glPopMatrix();
 	glutSwapBuffers();
@@ -201,8 +209,6 @@ void idle(void)
 }
 void init(void)
 {
-	
-
 	glutKeyboardFunc(myKeyboardFunc);
 	glutSpecialFunc(mySpcialFunc);
 	glutSpecialUpFunc(mySpcialUpFunc);
@@ -227,20 +233,49 @@ void timeKeeper(){
 	passtime = now-start;
 	
 	if(passtime > 400000){
-		printf("Time Up!\n");
+		sprintf(message, "Time Up!");
 		start = clock();
 		replay();
 	}
 }
 
 void gameover(){
-	printf("Game Over!\n");
+	sprintf(message, "Game Over!");
 	replay();
 }
 
 void gameClear() {
-	// game clear process
+	sprintf(message, "Clear!");
 }
+
+
+/*
+ * 文字の描画
+ */
+void drawString()
+{
+	// 平行投影にする
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT); // glRasterPos2fの準備(左下(0, 0), 右上(WINDOW_WIDTH, WINDOW_HEIGHT)と考えていいように設定)
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+	glRasterPos2f(10, WINDOW_HEIGHT-20); // 書き始める左下の座標を設定
+	int m;
+	for (m = 0; m < strlen(message) ; m++) { // 文字の書き出し
+		glutBitmapCharacter(FONT, message[m]);
+	}
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 int main(int argc, char *argv[])
 {	
@@ -249,6 +284,7 @@ int main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutCreateWindow("iraira");
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutDisplayFunc(display);
 	mapdisplay();
 	init();
