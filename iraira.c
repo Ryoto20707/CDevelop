@@ -1,6 +1,7 @@
 #include <time.h>
 #include "map.c"
 
+
 int collision(); //衝突判定
 void myTimerFunc(int value); //プレイヤーを動かす
 void myKeyboardFunc(unsigned char key, int x, int y); //キーボード操作
@@ -15,6 +16,9 @@ void gameover(); //ゲームオーバーにする
 void gameClear(); //クリア処理をする
 
 int jumpflag = 0;
+
+double x_speed = 0.0;
+double y_speed = 0.0;
 
 
 int collision()
@@ -56,38 +60,54 @@ void myTimerFunc(int value)
 	// 上キー
 	if (mySpecialValue & (1 << 0))
 	{
-		y += friction[fric][4];
-		if (collision())y -= friction[fric][4];
-		//ここを変更する
-		if (Y*L < y - MARGIN)y -= friction[fric][4];
+		y_speed += friction[fric][4]/M;
 	}
 
 	// 左キー
 	if (mySpecialValue & (1 << 1))
 	{
-		x -= friction[fric][4];
-		if (collision())x += friction[fric][4];
-		//ここを変更する
-		if (0 * L > x + MARGIN)x += friction[fric][4];
+		x_speed -= friction[fric][4]/M;
 	}
 
 	// 右キー
 	if (mySpecialValue & (1 << 2))
 	{
-		x += friction[fric][4];
-		if (collision())x -= friction[fric][4];
-		//ここを変更する
-		if ((X - 1)*L < x - MARGIN)x -= friction[fric][4];
+		x_speed += friction[fric][4]/M;
 	}
 
 	// 下キー
 	if (mySpecialValue & (1 << 3))
 	{
-		y -= friction[fric][4];
-		if (collision())y += friction[fric][4];
-		//ここを変更する
-		if (0 * L > y + MARGIN)y += friction[fric][4];
+		y_speed -= friction[fric][4]/M;
 	}
+
+	if (x_speed > 0.0) {
+		x_speed -= friction[fric][4]/M/INERTIA;
+		if(x_speed<0.0) x_speed = 0.0;
+	} else {
+		x_speed += friction[fric][4]/M/INERTIA;
+		if(x_speed>0.0) x_speed = 0.0;
+	}
+	if (y_speed > 0.0) {
+		y_speed -= friction[fric][4]/M/INERTIA;
+		if(y_speed<0.0) y_speed = 0.0;
+	} else {
+		y_speed += friction[fric][4]/M/INERTIA;
+		if(y_speed>0.0) y_speed = 0.0;
+	}
+
+
+	x += x_speed;
+	y += y_speed;
+
+	if (collision())x -= x_speed;
+	if (collision())y -= y_speed;
+	if (Y*L < y - MARGIN)y = (double)Y;
+	if (0 * L > x + MARGIN)x = 0.0;
+	if ((X - 1)*L < x - MARGIN)x = (double)(X-1);
+	if (0 * L > y + MARGIN)y = 0.0;
+
+	
 
 	// 重力
 	if (jumpflag == 1 && z > 0)
@@ -196,7 +216,7 @@ void display(void)
 
 	glPopMatrix();
 	glutSwapBuffers();
-	//timeKeeper();
+	timeKeeper();
 }
 
 
@@ -225,6 +245,8 @@ clock_t start,now;
 void replay(){
 	x = 0.0;
 	y = 0.0;
+	x_speed = 0.0;
+	y_speed = 0.0;
 }
 
 void timeKeeper(){
@@ -232,7 +254,7 @@ void timeKeeper(){
 	now = clock();
 	passtime = now-start;
 	
-	if(passtime > 400000){
+	if(passtime > TIMELIMIT){
 		printf("Time Up!\n");
 		start = clock();
 		replay();
