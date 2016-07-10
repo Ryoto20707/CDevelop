@@ -4,6 +4,9 @@
 #include <math.h>
 #include "belt.h"
 #define PI (3.14159)
+#define M 10.0
+#define INERTIA 4.0
+#define TIMELIMIT 1000000
 
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
