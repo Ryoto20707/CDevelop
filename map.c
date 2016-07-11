@@ -79,8 +79,8 @@ int fricindex = 3;
 
 double belt[][6] = {
 	{ 0.0, 5.0, 0.0, 25.0, 0.0, 0.0}, //デフォルト値(変えないで！)
-	{ 0.0, 4.0, 0.0, 3.0, 0.05, X_DIR},
-	{ 2.0, 3.0, 15.0, 20.0, -0.02, Y_DIR}
+    { 0.5, 4.5, 0.5, 3.5, 0.05, X_DIR},
+    { 2.5, 3.5, 15.5, 20.5, -0.02, Y_DIR}
 }; //ベルトコンベア。x座標からx座標まで(範囲)、　y座標からy座標まで、速さ、向き(+x:1,+y:2)
 int beltindex = 3;
 
@@ -185,9 +185,66 @@ void drawGround()
 			glVertex3dv(v[3]);
 		}
 	glEnd();
+    
+    drawBelt(); //ベルトコンベアの描写
 
 	glPopMatrix();
 }
+
+void drawBelt(void){ //ベルトコンベアの描写
+    int i = 0, j = 0;
+    double xp = 0.0, yp = 0.0;
+    
+    GLdouble normal[3] = { 0.0, 0.0, 1.0 };
+    
+    glPushMatrix();
+    
+    glNormal3dv(normal);
+    
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color[RED]);//三角形の色
+    glMaterialfv(GL_FRONT, GL_AMBIENT, color[RED]);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+    glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
+    glBegin(GL_TRIANGLES);
+    
+    for(i = 1; i < beltindex; i++){
+        for(yp = belt[i][Y_FROM]; yp < belt[i][Y_TO]; yp += 1.0){
+            for(xp = belt[i][X_FROM]; xp < belt[i][X_TO]; xp += 1.0){
+                GLdouble ArrowVertex[3][3]; //三角形の頂点を格納
+                
+                //三角形の向きを決定させる
+                if(belt[i][DIRECTION] ==  X_DIR){ //x方向のベルトコンベアの場合
+                    if(belt[i][SPEED] > 0.0){ //速度が正の場合
+                        ArrowVertex[0][0] = xp, ArrowVertex[0][1] = yp, ArrowVertex[0][2] = 0.01;
+                        ArrowVertex[1][0] = xp + 1.0, ArrowVertex[1][1] = yp + 0.5, ArrowVertex[1][2] = 0.01;
+                        ArrowVertex[2][0] = xp, ArrowVertex[2][1] = yp + 1.0, ArrowVertex[2][2] = 0.01;
+                    }else if(belt[i][SPEED] < 0.0){ //速度が負の場合
+                        ArrowVertex[0][0] = xp + 1.0, ArrowVertex[0][1] = yp + 1.0, ArrowVertex[0][2] = 0.01;
+                        ArrowVertex[1][0] = xp, ArrowVertex[1][1] = yp + 0.5, ArrowVertex[1][2] = 0.01;
+                        ArrowVertex[2][0] = xp + 1.0, ArrowVertex[2][1] = yp, ArrowVertex[2][2] = 0.01;
+                    }
+                }else if(belt[i][DIRECTION] == Y_DIR){ //y方向のベルトコンベアの場合
+                    if(belt[i][SPEED] > 0.0){ //速度が正の場合
+                        ArrowVertex[0][0] = xp + 1.0, ArrowVertex[0][1] = yp, ArrowVertex[0][2] = 0.01;
+                        ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp + 1.0, ArrowVertex[1][2] = 0.01;
+                        ArrowVertex[2][0] = xp, ArrowVertex[2][1] = yp, ArrowVertex[2][2] = 0.01;
+                    }else{ //速度が負の場合
+                        ArrowVertex[0][0] = xp, ArrowVertex[0][1] = yp + 1.0,  ArrowVertex[0][2] = 0.01;
+                        ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp, ArrowVertex[1][2] = 0.01;
+                        ArrowVertex[2][0] = xp + 1.0, ArrowVertex[2][1] = yp + 1.0, ArrowVertex[2][2] = 0.01;
+                    }
+                }
+                
+                for(j = 0; j < 3; j++) glVertex3dv(ArrowVertex[j]); //三角形を描写
+            }
+        }
+    }
+    
+    glEnd();
+    
+    glPopMatrix();
+}
+
 void obstacle1(void)	//障害物（木）
 {
 	glPushMatrix();

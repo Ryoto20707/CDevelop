@@ -13,3 +13,7 @@
  */
 #define X_DIR 1.0 // x軸方向
 #define Y_DIR 2.0 // y軸方向
+
+
+//ベルトコンベア描写関数のプロトタイプ宣言
+void drawBelt(void);
