@@ -21,18 +21,23 @@ void gameClear(); //クリア処理をする
 void drawString(); //文字列の描画
 
 char message[36] = "Start!"; // メッセージエリアに表示する文字列
+int jumpflag = 0;
+
+double x_speed = 0.0;
+double y_speed = 0.0;
 
 int collision()
 {
 	//衝突判定
 	int i;
 	double MARGIN = 0.05;
-	if (z > 1)return 0;
+	//if (z > 1)return 0;
 	for (i = 0; i < tekiIndex; i++)
 	{
 		//簡単な衝突判定
 		if ((tekiList[i][0] - x <1 - MARGIN) && (tekiList[i][0] - x >-1 + MARGIN)
-			&& (tekiList[i][1] - y <1 - MARGIN) && (tekiList[i][1] - y >-1 + MARGIN))
+			&& (tekiList[i][1] - y <1 - MARGIN) && (tekiList[i][1] - y >-1 + MARGIN)
+			&& (tekiList[i][2] - z <1 - MARGIN) && (tekiList[i][2] - z >-1 + MARGIN))
 		{
 			//printf("(%.02f,%.02f):(%.02f,%.02f)\n", x, y, tekiList[i][0], tekiList[i][1]);
 			gameover();
@@ -60,41 +65,57 @@ void myTimerFunc(int value)
 	// 上キー
 	if (mySpecialValue & (1 << 0))
 	{
-		y += friction[fric][4];
-		if (collision())y -= friction[fric][4];
-		//ここを変更する
-		if (Y*L < y - MARGIN)y -= friction[fric][4];
+		y_speed += friction[fric][4]/M;
 	}
 
 	// 左キー
 	if (mySpecialValue & (1 << 1))
 	{
-		x -= friction[fric][4];
-		if (collision())x += friction[fric][4];
-		//ここを変更する
-		if (0 * L > x + MARGIN)x += friction[fric][4];
+		x_speed -= friction[fric][4]/M;
 	}
 
 	// 右キー
 	if (mySpecialValue & (1 << 2))
 	{
-		x += friction[fric][4];
-		if (collision())x -= friction[fric][4];
-		//ここを変更する
-		if ((X - 1)*L < x - MARGIN)x -= friction[fric][4];
+		x_speed += friction[fric][4]/M;
 	}
 
 	// 下キー
 	if (mySpecialValue & (1 << 3))
 	{
-		y -= friction[fric][4];
-		if (collision())y += friction[fric][4];
-		//ここを変更する
-		if (0 * L > y + MARGIN)y += friction[fric][4];
+		y_speed -= friction[fric][4]/M;
 	}
 
+	if (x_speed > 0.0) {
+		x_speed -= friction[fric][4]/M/INERTIA;
+		if(x_speed<0.0) x_speed = 0.0;
+	} else {
+		x_speed += friction[fric][4]/M/INERTIA;
+		if(x_speed>0.0) x_speed = 0.0;
+	}
+	if (y_speed > 0.0) {
+		y_speed -= friction[fric][4]/M/INERTIA;
+		if(y_speed<0.0) y_speed = 0.0;
+	} else {
+		y_speed += friction[fric][4]/M/INERTIA;
+		if(y_speed>0.0) y_speed = 0.0;
+	}
+
+
+	x += x_speed;
+	y += y_speed;
+
+	if (collision())x -= x_speed;
+	if (collision())y -= y_speed;
+	if (Y*L < y - MARGIN)y = (double)Y;
+	if (0 * L > x + MARGIN)x = 0.0;
+	if ((X - 1)*L < x - MARGIN)x = (double)(X-1);
+	if (0 * L > y + MARGIN)y = 0.0;
+
+	
+
 	// 重力
-	if (z > 0)
+	if (jumpflag == 1 && z > 0)
 	{
 		v -= 0.01;
 		z += v;
@@ -107,6 +128,7 @@ void myTimerFunc(int value)
 		{
 			z = 0;
 			v = 0;
+			jumpflag = 0;
 		}
 	}
 
@@ -137,9 +159,11 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case ' ':
-		//ここを変更する
-		v = 0.2;
-		z += v;
+		if(jumpflag == 0){
+			jumpflag  = 1;
+			v = 0.2;
+			z += v;
+		}
 		break;
 	}
 }
@@ -225,6 +249,8 @@ clock_t start,now;
 void replay(){
 	x = 0.0;
 	y = 0.0;
+	x_speed = 0.0;
+	y_speed = 0.0;
 }
 
 void timeKeeper(){
@@ -232,8 +258,9 @@ void timeKeeper(){
 	now = clock();
 	passtime = now-start;
 	
-	if(passtime > 400000){
+	if(passtime > TIMELIMIT){
 		sprintf(message, "Time Up!");
+		printf("Time Up!\n");
 		start = clock();
 		replay();
 	}

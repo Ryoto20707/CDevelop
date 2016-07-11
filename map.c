@@ -4,38 +4,65 @@
 #include <math.h>
 #include "belt.h"
 #define PI (3.14159)
+#define M 10.0
+#define INERTIA 4.0
+#define TIMELIMIT 1000000
 
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
 GLfloat pos1[] = { 0.0, 0.0, 5.0, 1.0 };
-enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK };
+enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK, YGREEN, BROWN };
 GLfloat color[][4] = {
-		{ 1.0, 1.0, 1.0, 1.0 },
-		{ 1.0, 0.0, 0.0, 1.0 },
-		{ 0.0, 1.0, 0.0, 1.0 },
-		{ 0.0, 0.0, 1.0, 1.0 },
-		{ 1.0, 1.0, 0.0, 1.0 },
-		{ 1.0, 0.0, 1.0, 1.0 },
-		{ 0.0, 1.0, 1.0, 1.0 },
-		{ 0.7, 0.7, 0.7, 1.0 },
-		{ 0.0, 0.0, 0.0, 1.0 } };//色を増やす場合はここに追加
+	{ 1.0, 1.0, 1.0, 1.0 },
+	{ 1.0, 0.0, 0.0, 1.0 },
+	{ 0.0, 1.0, 0.0, 1.0 },
+	{ 0.0, 0.0, 1.0, 1.0 },
+	{ 1.0, 1.0, 0.0, 1.0 },
+	{ 1.0, 0.0, 1.0, 1.0 },
+	{ 0.0, 1.0, 1.0, 1.0 },
+	{ 0.7, 0.7, 0.7, 1.0 },
+	{ 0.0, 0.0, 0.0, 1.0 },
+	{ 0.5, 1.0, 0.0, 1.0 },
+	{ 0.58, 0.28, 0.1, 1.0 } };//色を増やす場合はここに追加
 double x = 0;
 double y = 0;
 double z = 0;
 int mySpecialValue = 0;
+
+GLdouble vertex1[][3] = {//直方体(木の幹)の座標
+	{ -0.1, -0.1, 0.01 },
+	{ 0.1, -0.1, 0.01 },
+	{ 0.1, 0.1, 0.01 },
+	{ -0.1, 0.1, 0.01 },
+	{ -0.1, -0.1, 0.5 },
+	{ 0.1, -0.1, 0.5 },
+	{ 0.1, 0.1, 0.5 },
+	{ -0.1, 0.1, 0.5 }
+};
+
+int face[][4] = {//面の定義。直方体生成時に必要
+	{ 0, 1, 2, 3 },
+	{ 1, 5, 6, 2 },
+	{ 5, 4, 7, 6 },
+	{ 4, 0, 3, 7 },
+	{ 4, 5, 1, 0 },
+	{ 3, 2, 6, 7 }
+};
+
 double tekiList[][3] = {
-		{ 0.0, 2.0, 0.0 },
-		{ 4.0, 4.0, 0.0 },
-		{ 2.0, 6.0, 0.0 },
-		{ 0.0, 10.0, 0.0 },
-		{ 4.0, 13.0, 0.0 },
-		{ 3.0, 14.0, 0.0 },
-		{ 2.0, 15.0, 0.0 },
-		{ 1.0, 16.0, 0.0 },
-		{ 3.0, 19.0, 0.0 },
-		{ 2.0, 20.0, 0.0 },
-		{ 1.0, 21.0, 0.0 },
-		{ 0.0, 22.0, 0.0 } };//障害物のリスト
+	{ 0.0, 2.0, 0.0 },
+	{ 4.0, 4.0, 0.0 },
+	{ 2.0, 6.0, 0.0 },
+	{ 0.0, 10.0, 0.0 },
+	{ 4.0, 13.0, 0.0 },
+	{ 3.0, 14.0, 0.0 },
+	{ 2.0, 15.0, 0.0 },
+	{ 1.0, 16.0, 0.0 },
+	{ 3.0, 19.0, 0.0 },
+	{ 2.0, 20.0, 0.0 },
+	{ 1.0, 21.0, 0.0 },
+	{ 0.0, 22.0, 0.0 }
+};//障害物のリスト
 int tekiIndex = 12;
 double v = 0;
 
@@ -90,15 +117,15 @@ void drawGround()
 	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
 	glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
 	glBegin(GL_QUADS);
-	glVertex3d(-0.5*L, -0.5*L, 0.0);//スタート
-	glVertex3d((X - 0.5)*L, -0.5*L, 0.0);
-	glVertex3d((X - 0.5)*L, 0.5*L, 0.0);
-	glVertex3d(-0.5*L, 0.5*L, 0.0);
+	glVertex3d(-0.5 * L, -0.5 * L, 0.0); //スタート
+	glVertex3d((X - 0.5)*L, -0.5 * L, 0.0);
+	glVertex3d((X - 0.5)*L, 0.5 * L, 0.0);
+	glVertex3d(-0.5 * L, 0.5 * L, 0.0);
 
-	glVertex3d(-0.5*L, (Y - 0.5)*L, 0.0);//ゴール
+	glVertex3d(-0.5 * L, (Y - 0.5)*L, 0.0); //ゴール
 	glVertex3d((X - 0.5)*L, (Y - 0.5)*L, 0.0);
 	glVertex3d((X - 0.5)*L, (Y + 0.5)*L, 0.0);
-	glVertex3d(-0.5*L, (Y + 0.5)*L, 0.0);
+	glVertex3d(-0.5 * L, (Y + 0.5)*L, 0.0);
 	glEnd();
 
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[GRAY]);//灰色
@@ -109,24 +136,24 @@ void drawGround()
 	for (i = 1; i < Y; i++)
 		for (j = 0; j < X; j++)
 		{
-		GLdouble v[4][3];
-		if (!((i^j) & 1))continue;
-		v[0][0] = (j + 0 - 0.5)*L;
-		v[0][1] = (i + 0 - 0.5)*L;
-		v[0][2] = 0;
-		v[1][0] = (j + 1 - 0.5)*L;
-		v[1][1] = (i + 0 - 0.5)*L;
-		v[1][2] = 0;
-		v[2][0] = (j + 1 - 0.5)*L;
-		v[2][1] = (i + 1 - 0.5)*L;
-		v[2][2] = 0;
-		v[3][0] = (j + 0 - 0.5)*L;
-		v[3][1] = (i + 1 - 0.5)*L;
-		v[3][2] = 0;
-		glVertex3dv(v[0]);
-		glVertex3dv(v[1]);
-		glVertex3dv(v[2]);
-		glVertex3dv(v[3]);
+			GLdouble v[4][3];
+			if (!((i ^ j) & 1))continue;
+			v[0][0] = (j + 0 - 0.5) * L;
+			v[0][1] = (i + 0 - 0.5) * L;
+			v[0][2] = 0;
+			v[1][0] = (j + 1 - 0.5) * L;
+			v[1][1] = (i + 0 - 0.5) * L;
+			v[1][2] = 0;
+			v[2][0] = (j + 1 - 0.5) * L;
+			v[2][1] = (i + 1 - 0.5) * L;
+			v[2][2] = 0;
+			v[3][0] = (j + 0 - 0.5) * L;
+			v[3][1] = (i + 1 - 0.5) * L;
+			v[3][2] = 0;
+			glVertex3dv(v[0]);
+			glVertex3dv(v[1]);
+			glVertex3dv(v[2]);
+			glVertex3dv(v[3]);
 		}
 	glEnd();
 
@@ -138,27 +165,50 @@ void drawGround()
 	for (i = 0; i < Y; i++)
 		for (j = 0; j < X; j++)
 		{
-		GLdouble v[4][3];
-		if ((i^j) & 1)continue;
-		v[0][0] = (j + 0 - 0.5)*L;
-		v[0][1] = (i + 0 - 0.5)*L;
-		v[0][2] = 0;
-		v[1][0] = (j + 1 - 0.5)*L;
-		v[1][1] = (i + 0 - 0.5)*L;
-		v[1][2] = 0;
-		v[2][0] = (j + 1 - 0.5)*L;
-		v[2][1] = (i + 1 - 0.5)*L;
-		v[2][2] = 0;
-		v[3][0] = (j + 0 - 0.5)*L;
-		v[3][1] = (i + 1 - 0.5)*L;
-		v[3][2] = 0;
-		glVertex3dv(v[0]);
-		glVertex3dv(v[1]);
-		glVertex3dv(v[2]);
-		glVertex3dv(v[3]);
+			GLdouble v[4][3];
+			if ((i ^ j) & 1)continue;
+			v[0][0] = (j + 0 - 0.5) * L;
+			v[0][1] = (i + 0 - 0.5) * L;
+			v[0][2] = 0;
+			v[1][0] = (j + 1 - 0.5) * L;
+			v[1][1] = (i + 0 - 0.5) * L;
+			v[1][2] = 0;
+			v[2][0] = (j + 1 - 0.5) * L;
+			v[2][1] = (i + 1 - 0.5) * L;
+			v[2][2] = 0;
+			v[3][0] = (j + 0 - 0.5) * L;
+			v[3][1] = (i + 1 - 0.5) * L;
+			v[3][2] = 0;
+			glVertex3dv(v[0]);
+			glVertex3dv(v[1]);
+			glVertex3dv(v[2]);
+			glVertex3dv(v[3]);
 		}
 	glEnd();
 
+	glPopMatrix();
+}
+void obstacle1(void)	//障害物（木）
+{
+	glPushMatrix();
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BROWN]);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, color[BROWN]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+	glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
+	glBegin(GL_QUADS);
+	for (int j = 0; j < 6; ++j) {
+		for (int i = 0; i < 4; ++i) {
+			glVertex3dv(vertex1[face[j][i]]);
+		}
+	}
+	glEnd();
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[YGREEN]);
+	glTranslatef(0, 0, 0.5);
+	glutSolidCone(0.5, 0.75, 20, 20);
+	glTranslatef(0, 0, 0.25);
+	glutSolidCone(0.4, 0.6, 20, 20);
+	glTranslatef(0, 0, 0.25);
+	glutSolidCone(0.3, 0.45, 20, 20);
 	glPopMatrix();
 }
 
@@ -178,7 +228,7 @@ void drawJiki(void)
 	glutSolidCube(1);
 	glPopMatrix();
 }
-void drawTeki(void)
+void drawTeki(void)		//障害物の一括配置
 {
 	int i;
 	glPushMatrix();
@@ -191,7 +241,8 @@ void drawTeki(void)
 	{
 		glPushMatrix();
 		glTranslatef(tekiList[i][0], tekiList[i][1], tekiList[i][2]);
-		glutSolidCone(0.5, 1, 30, 30);
+		//glutSolidCone(0.5, 1, 30, 30);
+		obstacle1();					//ここで木を配置する
 		glPopMatrix();
 	}
 	glPopMatrix();
@@ -204,7 +255,7 @@ void mapdisplay(void)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
@@ -217,7 +268,7 @@ void mapdisplay(void)
 	gluLookAt(0.0, -10.0, 2.0, 0.0, 0.0, 1.5, 0.0, 0.0, 1.0);
 	glLightfv(GL_LIGHT1, GL_POSITION, pos1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, color[WHITE]);
-	
+
 }
 
 /*void display(void)
