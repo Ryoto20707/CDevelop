@@ -228,7 +228,7 @@ void drawBelt(void){ //ベルトコンベアの描写
                         ArrowVertex[0][0] = xp + 1.0, ArrowVertex[0][1] = yp, ArrowVertex[0][2] = 0.01;
                         ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp + 1.0, ArrowVertex[1][2] = 0.01;
                         ArrowVertex[2][0] = xp, ArrowVertex[2][1] = yp, ArrowVertex[2][2] = 0.01;
-                    }else{ //速度が負の場合
+                    }else if(belt[i][SPEED] < 0.0){ //速度が負の場合
                         ArrowVertex[0][0] = xp, ArrowVertex[0][1] = yp + 1.0,  ArrowVertex[0][2] = 0.01;
                         ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp, ArrowVertex[1][2] = 0.01;
                         ArrowVertex[2][0] = xp + 1.0, ArrowVertex[2][1] = yp + 1.0, ArrowVertex[2][2] = 0.01;
