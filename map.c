@@ -270,7 +270,7 @@ void obstacle1(void)	//障害物（木）
 }
 
 double theta;
-void drawJiki(void)
+void drawJiki(void)		//動かす物
 {
 	glPushMatrix();
 
@@ -282,7 +282,8 @@ void drawJiki(void)
 	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
 	glMaterialf(GL_FRONT, GL_SHININESS, 50.0);
 
-	glutSolidCube(1);
+	//glutSolidCube(1);
+	glutSolidSphere(0.5, 30, 30);
 	glPopMatrix();
 }
 void drawTeki(void)		//障害物の一括配置
