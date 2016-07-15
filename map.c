@@ -11,19 +11,22 @@
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
 GLfloat pos1[] = { 0.0, 0.0, 5.0, 1.0 };
-enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK, YGREEN, BROWN };
+enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK, YGREEN, BROWN,BELT_BLACK, BELT_GRAY, BELT_SILVER };
 GLfloat color[][4] = {
-	{ 1.0, 1.0, 1.0, 1.0 },
-	{ 1.0, 0.0, 0.0, 1.0 },
-	{ 0.0, 1.0, 0.0, 1.0 },
-	{ 0.0, 0.0, 1.0, 1.0 },
-	{ 1.0, 1.0, 0.0, 1.0 },
-	{ 1.0, 0.0, 1.0, 1.0 },
-	{ 0.0, 1.0, 1.0, 1.0 },
-	{ 0.7, 0.7, 0.7, 1.0 },
-	{ 0.0, 0.0, 0.0, 1.0 },
-	{ 0.5, 1.0, 0.0, 1.0 },
-	{ 0.58, 0.28, 0.1, 1.0 } };//色を増やす場合はここに追加
+    { 1.0, 1.0, 1.0, 1.0 },
+    { 1.0, 0.0, 0.0, 1.0 },
+    { 0.0, 1.0, 0.0, 1.0 },
+    { 0.0, 0.0, 1.0, 1.0 },
+    { 1.0, 1.0, 0.0, 1.0 },
+    { 1.0, 0.0, 1.0, 1.0 },
+    { 0.0, 1.0, 1.0, 1.0 },
+    { 0.7, 0.7, 0.7, 1.0 },
+    { 0.0, 0.0, 0.0, 1.0 },
+    { 0.5, 1.0, 0.0, 1.0 },
+    { 0.58, 0.28, 0.1, 1.0 },
+    { 0.2, 0.2, 0.2, 1.0 },
+    { 0.5, 0.5, 0.5, 1.0 },
+    { 0.77, 0.77, 0.77, 1.0 } };//色を増やす場合はここに追加
 double x = 0;
 double y = 0;
 double z = 0;
@@ -194,19 +197,65 @@ void drawGround()
 void drawBelt(void){ //ベルトコンベアの描写
     int i = 0, j = 0;
     double xp = 0.0, yp = 0.0;
-    
     GLdouble normal[3] = { 0.0, 0.0, 1.0 };
     
     glPushMatrix();
     
     glNormal3dv(normal);
     
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, color[RED]);//三角形の色
-    glMaterialfv(GL_FRONT, GL_AMBIENT, color[RED]);
+    /* ベルトコンべアの描画 */
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BELT_GRAY]);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, color[BELT_GRAY]);
     glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
     glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
-    glBegin(GL_TRIANGLES);
     
+    glBegin(GL_QUADS);
+    for(i = 1; i < beltindex; i++){
+        glVertex3d( belt[i][X_FROM], belt[i][Y_FROM], 0.005 );
+        glVertex3d( belt[i][X_TO], belt[i][Y_FROM] , 0.005 );
+        glVertex3d( belt[i][X_TO], belt[i][Y_TO] , 0.005 );
+        glVertex3d( belt[i][X_FROM], belt[i][Y_TO] , 0.005 );
+    }
+    glEnd();
+    
+    /* ベルトコンベアの縁の描画 */
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BELT_SILVER]);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, color[BELT_SILVER]);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+    glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
+    glLineWidth(2.0);
+    for(i = 1; i < beltindex; i++){
+        glBegin(GL_LINE_LOOP);
+        glVertex3d( belt[i][X_FROM], belt[i][Y_FROM], 0.01 );
+        glVertex3d( belt[i][X_TO], belt[i][Y_FROM] , 0.01 );
+        glVertex3d( belt[i][X_TO], belt[i][Y_TO] , 0.01 );
+        glVertex3d( belt[i][X_FROM], belt[i][Y_TO] , 0.01 );
+        glEnd();
+        
+        if(belt[i][DIRECTION] ==  X_DIR){ //x方向のベルトコンベアの場合
+            for(yp = belt[i][Y_FROM] + 1.0; yp < belt[i][Y_TO] ; yp+= 1.0){
+                glBegin(GL_LINES);
+                glVertex3d( belt[i][X_FROM], yp, 0.01 );
+                glVertex3d( belt[i][X_TO], yp, 0.01 );
+                glEnd();
+            }
+        }else if(belt[i][DIRECTION] ==  Y_DIR){ //y方向のベルトコンベアの場合
+            for(xp = belt[i][X_FROM] + 1.0; xp < belt[i][X_TO] ; xp+= 1.0){
+                glBegin(GL_LINES);
+                glVertex3d( xp, belt[i][Y_FROM], 0.01 );
+                glVertex3d( xp, belt[i][Y_TO], 0.01 );
+                glEnd();
+            }
+        }
+    }
+    
+    /* 矢印の描画 */
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BELT_BLACK]);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, color[BELT_BLACK]);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+    glMaterialf(GL_FRONT, GL_SHININESS, 100.0);
+    
+    glLineWidth(3.0);
     for(i = 1; i < beltindex; i++){
         for(yp = belt[i][Y_FROM]; yp < belt[i][Y_TO]; yp += 1.0){
             for(xp = belt[i][X_FROM]; xp < belt[i][X_TO]; xp += 1.0){
@@ -235,12 +284,12 @@ void drawBelt(void){ //ベルトコンベアの描写
                     }
                 }
                 
+                glBegin(GL_LINE_STRIP);
                 for(j = 0; j < 3; j++) glVertex3dv(ArrowVertex[j]); //三角形を描写
+                glEnd();
             }
         }
     }
-    
-    glEnd();
     
     glPopMatrix();
 }
