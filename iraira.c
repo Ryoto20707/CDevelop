@@ -161,6 +161,10 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case ' ':
+		if(cleared) {
+			gameStart();
+			break;
+		}
 		if(jumpflag == 0){
 			jumpflag  = 1;
 			v = 0.2;
@@ -172,6 +176,7 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 
 void mySpcialFunc(int key, int x, int y)
 {
+	if (cleared) return;
 	switch (key)
 	{
 	case GLUT_KEY_UP:
