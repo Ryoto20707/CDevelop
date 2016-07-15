@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include "map.c"
@@ -14,14 +15,15 @@ void mySpcialUpFunc(int key, int x, int y);
 void display(); //glutMainloop()で繰り返し処理する関数群
 void idle();
 void init();
-void replay(); //プレイヤーを初期位置に戻す
 void timeKeeper(); //制限時間を管理する
 void gameover(); //ゲームオーバーにする
 void gameClear(); //クリア処理をする
 void drawString(); //文字列の描画
+void gameStart(); //ゲーム開始
 
-char message[36] = "Start!"; // メッセージエリアに表示する文字列
+char message[][36] = {"Start!", ""}; // メッセージエリアに表示する文字列
 int jumpflag = 0;
+int cleared  = 0;
 
 double x_speed = 0.0;
 double y_speed = 0.0;
@@ -246,33 +248,37 @@ void init(void)
 
 clock_t start,now;
 
-void replay(){
+void gameStart(){
 	x = 0.0;
 	y = 0.0;
 	x_speed = 0.0;
 	y_speed = 0.0;
+	cleared = 0;
+	sprintf(message[0], "Start!");
+	start = clock();
 }
 
 void timeKeeper(){
+	if(cleared) return;
 	int passtime;
 	now = clock();
 	passtime = now-start;
-	
+	sprintf(message[1], "%d", TIMELIMIT - passtime);
 	if(passtime > TIMELIMIT){
-		sprintf(message, "Time Up!");
-		printf("Time Up!\n");
+		sprintf(message[0], "Time Up!");
 		start = clock();
-		replay();
+		gameStart();
 	}
 }
 
 void gameover(){
-	sprintf(message, "Game Over!");
-	replay();
+	sprintf(message[0], "Game Over!");
+	gameStart();
 }
 
 void gameClear() {
-	sprintf(message, "Clear!");
+	sprintf(message[0], "Clear!");
+	cleared = 1;
 }
 
 
@@ -291,10 +297,12 @@ void drawString()
 	glLoadIdentity();
 
 	glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-	glRasterPos2f(10, WINDOW_HEIGHT-20); // 書き始める左下の座標を設定
-	int m;
-	for (m = 0; m < strlen(message) ; m++) { // 文字の書き出し
-		glutBitmapCharacter(FONT, message[m]);
+	int i, m;
+	for (i = 0; i < sizeof(message) / sizeof(message[0]); i++) {
+		glRasterPos2f(10, WINDOW_HEIGHT - 20 - 24 * i); // 書き始める左下の座標を設定
+		for (m = 0; m < strlen(message[i]) ; m++) { // 文字の書き出し
+			glutBitmapCharacter(FONT, message[i][m]);
+		}
 	}
 
 	glPopMatrix();
@@ -305,9 +313,7 @@ void drawString()
 
 
 int main(int argc, char *argv[])
-{	
-	start = clock();
-
+{
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutCreateWindow("iraira");
@@ -315,7 +321,8 @@ int main(int argc, char *argv[])
 	glutDisplayFunc(display);
 	mapdisplay();
 	init();
-	
+
+	gameStart();
 	glutMainLoop();
 	return 0;
 }
