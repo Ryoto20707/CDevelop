@@ -88,6 +88,9 @@ void myTimerFunc(int value)
 		y_speed -= friction[fric][4]/M;
 	}
 
+	if (x == 0 && x_speed < 0) x_speed = 0.0;
+	if (x == X && x_speed > 0) x_speed = 0.0;
+
 	if (x_speed > 0.0) {
 		x_speed -= friction[fric][4]/M/INERTIA;
 		if(x_speed<0.0) x_speed = 0.0;
