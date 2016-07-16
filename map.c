@@ -11,7 +11,7 @@
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
 GLfloat pos1[] = { 0.0, 0.0, 5.0, 1.0 };
-enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK, YGREEN, BROWN,BELT_BLACK, BELT_GRAY, BELT_SILVER };
+enum COLOR { WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, GRAY, BLACK, YGREEN, BELT_BLACK, BELT_GRAY, BELT_SILVER, BROWN, LBROWN };
 GLfloat color[][4] = {
     { 1.0, 1.0, 1.0, 1.0 },
     { 1.0, 0.0, 0.0, 1.0 },
@@ -23,10 +23,12 @@ GLfloat color[][4] = {
     { 0.7, 0.7, 0.7, 1.0 },
     { 0.0, 0.0, 0.0, 1.0 },
     { 0.5, 1.0, 0.0, 1.0 },
-    { 0.58, 0.28, 0.1, 1.0 },
     { 0.2, 0.2, 0.2, 1.0 },
     { 0.5, 0.5, 0.5, 1.0 },
-    { 0.77, 0.77, 0.77, 1.0 } };//色を増やす場合はここに追加
+    { 0.77, 0.77, 0.77, 1.0 },
+    { 0.58, 0.28, 0.1, 1.0 },
+	{ 0.81, 0.6, 0.15, 1.0}
+	 };//色を増やす場合はここに追加
 double x = 0;
 double y = 0;
 double z = 0;
@@ -75,10 +77,11 @@ double L = 1;
 
 double friction[][5] = {
 	{ 0.0, 5.0, 0.0, 25.0, 0.1}, //デフォルト値(変えないで！)
-	{ 2.0, 3.0, 15.0, 25.0, 0.05},
-	{ 4.0, 5.0, 0.0, 5.0, 0.3}
+	{0.5, 4.5, 7.5, 10.5, 0.2},	//氷パネル適用範囲
+	{0.5, 2.5, 3.5, 5.5, 0.05},	//砂パネル適用範囲1
+	{0.5, 3.5, 10.5, 13.5, 0.05}//砂パネル適用範囲2
 }; //床の摩擦。x座標からx座標まで(範囲)、　y座標からy座標まで、速さ
-int fricindex = 3;
+int fricindex = 4;
 
 double belt[][6] = {
 	{ 0.0, 5.0, 0.0, 25.0, 0.0, 0.0}, //デフォルト値(変えないで！)
@@ -104,6 +107,90 @@ void calcNormal(GLdouble v0[3], GLdouble v1[3], GLdouble v2[3], GLdouble n[3])
 	abs = sqrt(vt[0] * vt[0] + vt[1] * vt[1] + vt[2] * vt[2]);
 	for (i = 0; i < 3; i++)
 		n[i] = vt[i] / abs;
+}
+
+void drawIcePanel(GLdouble x, GLdouble y) { //氷パネル配置関数。色だけ配置される。摩擦はfriction[][5]の中をいじって追加
+	GLdouble normal[3] = { 0.0, 0.0, 1.0 };
+	glPushMatrix();
+	glNormal3dv(normal);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[CYAN]);//灰色
+	glMaterialfv(GL_FRONT, GL_AMBIENT, color[BLACK]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+	glMaterialf(GL_FRONT, GL_SHININESS, 50.0);
+	glBegin(GL_QUADS);
+	glVertex3d(x + 0.5, y - 0.5, 0.001);
+	glVertex3d(x + 0.5, y + 0.5, 0.001);
+	glVertex3d(x - 0.5, y + 0.5, 0.001);
+	glVertex3d(x - 0.5, y - 0.5, 0.001);
+	glEnd();
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[WHITE]);//灰色
+	glMaterialfv(GL_FRONT, GL_AMBIENT, color[BLACK]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+	glBegin(GL_QUADS);
+	glVertex3d(x, y + 0.5, 0.002);
+	glVertex3d(x - 0.25, y + 0.5, 0.002);
+	glVertex3d(x - 0.5, y + 0.25, 0.002);
+	glVertex3d(x - 0.5, y, 0.002);
+
+	glVertex3d(x + 0.5, y + 0.5, 0.002);
+	glVertex3d(x + 0.125, y + 0.5, 0.002);
+	glVertex3d(x - 0.5, y - 0.125, 0.002);
+	glVertex3d(x - 0.5, y - 0.5, 0.002);
+
+	glVertex3d(x + 0.5, y, 0.002);
+	glVertex3d(x + 0.5, y + 0.25, 0.002);
+	glVertex3d(x - 0.25, y - 0.5, 0.002);
+	glVertex3d(x, y - 0.5, 0.002);
+	glEnd();
+
+	glBegin(GL_TRIANGLES);
+	glVertex3d(x + 0.5, y - 0.125, 0.002);
+	glVertex3d(x + 0.125, y - 0.5, 0.002);
+	glVertex3d(x + 0.5, y - 0.5, 0.002);
+	glEnd();
+	glPopMatrix();
+}
+
+void drawSand(GLdouble x, GLdouble y, GLdouble r){ //砂パネルデザイン用関数
+	GLdouble x1, y1;
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BROWN]);//灰色
+	glMaterialfv(GL_FRONT, GL_AMBIENT, color[BLACK]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+	glBegin(GL_POLYGON);
+		for (int i = 0; i < 100; i++) {
+			x1 = r * cos(2.0 * 3.14 * ((double)i/100) );
+			y1 = r * sin(2.0 * 3.14 * ((double)i/100) );
+			glVertex3f(x+x1, y+y1, 0.002);	
+		}
+	glEnd();
+}
+
+void drawSandPanel(GLdouble x, GLdouble y) { //砂パネル配置関数。色だけ配置される。摩擦はfriction[][5]の中をいじって追加
+	GLdouble normal[3] = { 0.0, 0.0, 1.0 };
+	glPushMatrix();
+	glNormal3dv(normal);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, color[LBROWN]);//灰色
+	glMaterialfv(GL_FRONT, GL_AMBIENT, color[BLACK]);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, color[WHITE]);
+	glMaterialf(GL_FRONT, GL_SHININESS, 50.0);
+	glBegin(GL_QUADS);
+	glVertex3d(x + 0.5, y - 0.5, 0.001);
+	glVertex3d(x + 0.5, y + 0.5, 0.001);
+	glVertex3d(x - 0.5, y + 0.5, 0.001);
+	glVertex3d(x - 0.5, y - 0.5, 0.001);
+	glEnd();
+	drawSand(x+0.3,y+0.3,0.07);
+	drawSand(x-0.2,y+0.25,0.11);
+	drawSand(x-0.25,y-0.25,0.1);
+	drawSand(x+0.3,y-0.25,0.09);
+	drawSand(x,y-0.2,0.07);
+	drawSand(x+0.07,y+0.4,0.07);
+	drawSand(x+0.1,y+0.1,0.09);
+	drawSand(x+0.4,y,0.09);
+	drawSand(x-0.4,y+0.05,0.05);
+	drawSand(x-0.2,y,0.06);
+	glPopMatrix();
 }
 
 void drawGround()
@@ -190,6 +277,22 @@ void drawGround()
 	glEnd();
     
     drawBelt(); //ベルトコンベアの描写
+
+    for(i = 1;i<=4;i++){	//氷パネルの描写
+		for(j = 8;j <= 10; j++){
+			drawIcePanel(i, j);
+		}
+	}
+
+	for(i = 1;i <= 3; i++){
+		for(j = 11;j <= 13; j++){
+			drawSandPanel(i, j);
+		}
+	}
+	drawSandPanel(2, 5);
+	drawSandPanel(2, 4);
+	drawSandPanel(1, 5);
+	drawSandPanel(1, 4);
 
 	glPopMatrix();
 }
