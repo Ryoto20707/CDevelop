@@ -254,7 +254,7 @@ void init(void)
 	
 }
 
-clock_t start,now;
+time_t start;
 
 void gameStart(){
 	x = 0.0;
@@ -263,24 +263,24 @@ void gameStart(){
 	y_speed = 0.0;
 	cleared = 0;
 	sprintf(message[0], "Start!");
-	start = clock();
+	start = time(NULL);
 }
 
 void timeKeeper(){
 	if(cleared) return;
 	int passtime;
-	now = clock();
-	passtime = now-start;
+	passtime = difftime(time(NULL), start);
 	sprintf(message[1], "%d", TIMELIMIT - passtime);
 	if(passtime > TIMELIMIT){
 		sprintf(message[0], "Time Up!");
-		start = clock();
+		sleep(1);
 		gameStart();
 	}
 }
 
 void gameover(){
 	sprintf(message[0], "Game Over!");
+	sleep(1);
 	gameStart();
 }
 

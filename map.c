@@ -6,7 +6,7 @@
 #define PI (3.14159)
 #define M 10.0
 #define INERTIA 4.0
-#define TIMELIMIT 100000000
+#define TIMELIMIT 60
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
 GLfloat pos1[] = { 0.0, 0.0, 5.0, 1.0 };
