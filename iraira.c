@@ -6,6 +6,10 @@
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 400
 #define FONT GLUT_BITMAP_9_BY_15
+#define PLAYING  0
+#define CLEAR    1
+#define GAMEOVER 2
+#define TIMEUP   3
 
 int collision(); //衝突判定
 void myTimerFunc(int value); //プレイヤーを動かす
@@ -23,7 +27,7 @@ void gameStart(); //ゲーム開始
 
 char message[][36] = {"Start!", ""}; // メッセージエリアに表示する文字列
 int jumpflag = 0;
-int cleared  = 0;
+int status  = 0;
 
 double x_speed = 0.0;
 double y_speed = 0.0;
@@ -164,7 +168,7 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case ' ':
-		if(cleared) {
+		if(status == CLEAR) {
 			gameStart();
 			break;
 		}
@@ -179,7 +183,7 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 
 void mySpcialFunc(int key, int x, int y)
 {
-	if (cleared) return;
+	if (status == CLEAR) return;
 	switch (key)
 	{
 	case GLUT_KEY_UP:
@@ -261,32 +265,39 @@ void gameStart(){
 	y = 0.0;
 	x_speed = 0.0;
 	y_speed = 0.0;
-	cleared = 0;
+	status = PLAYING;
 	sprintf(message[0], "Start!");
 	start = time(NULL);
 }
 
 void timeKeeper(){
-	if(cleared) return;
+	switch(status) {
+		case GAMEOVER:
+		case TIMEUP:
+			sleep(1);
+			gameStart();
+		case CLEAR:
+			return;
+		default:
+			break;
+	}
 	int passtime;
 	passtime = difftime(time(NULL), start);
 	sprintf(message[1], "%d", TIMELIMIT - passtime);
 	if(passtime > TIMELIMIT){
 		sprintf(message[0], "Time Up!");
-		sleep(1);
-		gameStart();
+		status = TIMEUP;
 	}
 }
 
 void gameover(){
 	sprintf(message[0], "Game Over!");
-	sleep(1);
-	gameStart();
+	status = GAMEOVER;
 }
 
 void gameClear() {
 	sprintf(message[0], "Clear!");
-	cleared = 1;
+	status = CLEAR;
 }
 
 
