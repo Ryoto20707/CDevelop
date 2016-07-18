@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#if _WIN32
+#include <GL/glut.h>
+#else
 #include <GLUT/glut.h>
+#endif
 #include <math.h>
-#include "belt.h"
-#define PI (3.14159)
-#define M 10.0
-#define INERTIA 4.0
-#define TIMELIMIT 60
+#include "map.h"
 
 GLfloat pos0[] = { 5.0, 0.0, 0.0, 1.0 };
 GLfloat pos1[] = { 0.0, 0.0, 5.0, 1.0 };
@@ -545,28 +545,3 @@ void mapdisplay(void)
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, color[WHITE]);
 
 }
-
-/*void display(void)
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPushMatrix();
-
-	drawGround();
-	drawJiki();
-	drawTeki();
-
-	glPopMatrix();
-	glutSwapBuffers();
-}
-
-int main(int argc, char *argv[])
-{
-
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutCreateWindow("C Dev");
-	glutDisplayFunc(display);
-	mapdisplay();
-	glutMainLoop();
-	return 0;
-}*/

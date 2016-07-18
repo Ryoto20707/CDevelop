@@ -1,7 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS // visual studioでsprintfが使える設定
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "map.c"
+#if _WIN32
+#include <Windows.h>
+#endif
+#include "map.h"
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 400
@@ -282,7 +286,11 @@ void timeKeeper(){
 	switch(status) {
 		case GAMEOVER:
 		case TIMEUP:
+#if _WIN32
+			Sleep(1000);
+#else
 			sleep(1);
+#endif
 			gameStart();
 		case CLEAR:
 			return;
@@ -327,7 +335,7 @@ void drawString()
 	int i, m;
 	for (i = 0; i < sizeof(message) / sizeof(message[0]); i++) {
 		glRasterPos2f(10, WINDOW_HEIGHT - 20 - 24 * i); // 書き始める左下の座標を設定
-		for (m = 0; m < strlen(message[i]) ; m++) { // 文字の書き出し
+		for (m = 0; m < (signed)strlen(message[i]) ; m++) { // 文字の書き出し
 			glutBitmapCharacter(FONT, message[i][m]);
 		}
 	}
