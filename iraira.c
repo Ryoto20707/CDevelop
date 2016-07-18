@@ -65,15 +65,16 @@ void myTimerFunc(int value)
 	double max_speed;
 	int i;
 	int fric = 0;
+	int bt = 0;
+	int bt_direction;
 	for(i=0;i<fricindex;i++){
 		if(friction[i][0]<x&&x<friction[i][1]&&friction[i][2]<y&&y<friction[i][3]) fric = i;
 	}
 	max_speed = friction[fric][4]*2.0;
-	int bt = 0;
 	for(i=0;i<beltindex;i++){
 		if(belt[i][X_FROM]<x&&x<belt[i][X_TO]&&belt[i][Y_FROM]<y&&y<belt[i][Y_TO]) bt = i;
 	}
-	int bt_direction = (int)belt[bt][DIRECTION];
+	bt_direction = (int)belt[bt][DIRECTION];
 
 	// ベルトコンベア
 	if(bt_direction==X_DIR){
@@ -293,6 +294,7 @@ void gameStart(){
 }
 
 void timeKeeper(){
+	int passtime;
 	switch(status) {
 		case GAMEOVER:
 		case TIMEUP:
@@ -307,7 +309,6 @@ void timeKeeper(){
 		default:
 			break;
 	}
-	int passtime;
 	passtime = difftime(time(NULL), start); 
 	sprintf(message[1], "%d", TIMELIMIT - passtime);
 	if(passtime >= TIMELIMIT){
@@ -332,6 +333,7 @@ void gameClear() {
  */
 void drawString()
 {
+	int i, m;
 	// 平行投影にする
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -342,7 +344,6 @@ void drawString()
 	glLoadIdentity();
 
 	glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-	int i, m;
 	for (i = 0; i < sizeof(message) / sizeof(message[0]); i++) {
 		glRasterPos2f(10, WINDOW_HEIGHT - 20 - 24 * i); // 書き始める左下の座標を設定
 		for (m = 0; m < (signed)strlen(message[i]) ; m++) { // 文字の書き出し
