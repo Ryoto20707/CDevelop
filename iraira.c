@@ -69,6 +69,20 @@ void myTimerFunc(int value)
 	}
 	int bt_direction = (int)belt[bt][DIRECTION];
 
+	// ベルトコンベア
+	if(bt_direction==X_DIR){
+		x += belt[bt][SPEED];
+		if (collision())x -= belt[bt][SPEED];
+		//ここを変更する
+		if ((X - 1)*L < x - MARGIN)x -= belt[bt][SPEED];
+	}else if(bt_direction==Y_DIR){
+		y += belt[bt][SPEED];
+		if (collision())y -= belt[bt][SPEED];
+		//ここを変更する
+		if (Y*L < y - MARGIN)y -= belt[bt][SPEED];
+	}
+	if(y>Y-MARGIN) gameClear();
+
 	// 上キー
 	if (mySpecialValue & (1 << 0))
 	{
@@ -92,9 +106,6 @@ void myTimerFunc(int value)
 	{
 		y_speed -= friction[fric][4]/M;
 	}
-
-	if (x == 0 && x_speed < 0) x_speed = 0.0;
-	if (x == X && x_speed > 0) x_speed = 0.0;
 
 	if (x_speed > 0.0) {
 		x_speed -= friction[fric][4]/M/INERTIA;
@@ -122,7 +133,8 @@ void myTimerFunc(int value)
 	if ((X - 1)*L < x - MARGIN)x = (double)(X-1);
 	if (0 * L > y + MARGIN)y = 0.0;
 
-	
+	if (x < 0.05   && x_speed < 0.0) x_speed = 0.0;
+	if (x > X-1-0.05 && x_speed > 0.0) x_speed = 0.0;
 
 	// 重力
 	if (jumpflag == 1 && z > 0)
@@ -141,20 +153,6 @@ void myTimerFunc(int value)
 			jumpflag = 0;
 		}
 	}
-
-	// ベルトコンベア
-	if(bt_direction==X_DIR){
-		x += belt[bt][SPEED];
-		if (collision())x -= belt[bt][SPEED];
-		//ここを変更する
-		if ((X - 1)*L < x - MARGIN)x -= belt[bt][SPEED];
-	}else if(bt_direction==Y_DIR){
-		y += belt[bt][SPEED];
-		if (collision())y -= belt[bt][SPEED];
-		//ここを変更する
-		if (Y*L < y - MARGIN)y -= belt[bt][SPEED];
-	}
-	if(y>Y-MARGIN) gameClear();
 
 	//視点を移動
 	glLoadIdentity();
@@ -306,7 +304,7 @@ void gameover(){
 }
 
 void gameClear() {
-	sprintf(message[0], "Clear!");
+	sprintf(message[0], "Clear! Press space to Restart");
 	status = CLEAR;
 }
 
