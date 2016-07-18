@@ -28,6 +28,7 @@ void gameStart(); //ゲーム開始
 char message[][36] = {"Start!", ""}; // メッセージエリアに表示する文字列
 int jumpflag = 0;
 int status  = 0;
+double lookat_z = 1.5;
 
 double x_speed = 0.0;
 double y_speed = 0.0;
@@ -157,7 +158,7 @@ void myTimerFunc(int value)
 
 	//視点を移動
 	glLoadIdentity();
-	gluLookAt(0.0 + x, -10.0 + y, 2.0, 0.0 + x, 0.0 + y, 1.5, 0.0, 0.0, 1.0);
+	gluLookAt(0.0 + x, -10.0 + y, lookat_z, 0.0 + x, 0.0 + y, 1.5, 0.0, 0.0, 1.0);
 
 	glutTimerFunc(10, myTimerFunc, 0);
 
@@ -178,6 +179,15 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 			z += v;
 		}
 		break;
+	case 'a':
+		if(lookat_z < 5.0) {
+			lookat_z += 0.1;
+		}
+		break;
+	case 's':
+		if(lookat_z > 1.0) {
+			lookat_z -= 0.1;
+		}
 	}
 }
 
