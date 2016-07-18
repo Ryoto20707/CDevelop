@@ -147,6 +147,9 @@ void myTimerFunc(int value)
 	if (x < 0.05   && x_speed < 0.0) x_speed = 0.0;
 	if (x > X-1-0.05 && x_speed > 0.0) x_speed = 0.0;
 
+	if (y < 0.05   && y_speed < 0.0) y_speed = 0.0;
+	if (y > Y-1-0.05 && y_speed > 0.0) y_speed = 0.0;
+
 	// 重力
 	if (jumpflag == 1 && z > 0)
 	{
