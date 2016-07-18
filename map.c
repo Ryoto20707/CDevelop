@@ -326,7 +326,7 @@ void drawGround()
 }
 
 void drawBelt(void){ //ベルトコンベアの描写
-    int i = 0, j = 0;
+    int i = 0, j = 0, k = 0;
     double xp = 0.0, yp = 0.0;
     GLdouble normal[3] = { 0.0, 0.0, 1.0 };
     
@@ -390,34 +390,71 @@ void drawBelt(void){ //ベルトコンベアの描写
     for(i = 1; i < beltindex; i++){
         for(yp = belt[i][Y_FROM]; yp < belt[i][Y_TO]; yp += 1.0){
             for(xp = belt[i][X_FROM]; xp < belt[i][X_TO]; xp += 1.0){
-                GLdouble ArrowVertex[3][3]; //三角形の頂点を格納
+                GLdouble ArrowVertex1[3][3], ArrowVertex2[3][3]; //三角形の頂点を格納
                 
                 //三角形の向きを決定させる
                 if(belt[i][DIRECTION] ==  X_DIR){ //x方向のベルトコンベアの場合
                     if(belt[i][SPEED] > 0.0){ //速度が正の場合
-                        ArrowVertex[0][0] = xp, ArrowVertex[0][1] = yp, ArrowVertex[0][2] = 0.01;
-                        ArrowVertex[1][0] = xp + 1.0, ArrowVertex[1][1] = yp + 0.5, ArrowVertex[1][2] = 0.01;
-                        ArrowVertex[2][0] = xp, ArrowVertex[2][1] = yp + 1.0, ArrowVertex[2][2] = 0.01;
+                        ArrowVertex1[0][0] = xp, ArrowVertex1[0][1] = yp, ArrowVertex1[0][2] = 0.01;
+                        ArrowVertex1[1][0] = xp + 0.5, ArrowVertex1[1][1] = yp + 0.5, ArrowVertex1[1][2] = 0.01;
+                        ArrowVertex1[2][0] = xp, ArrowVertex1[2][1] = yp + 1.0, ArrowVertex1[2][2] = 0.01;
+                        
+                        for(j=0;j<3;j++){
+                            for(k=0;k<3;k++){
+                                ArrowVertex2[j][k] = ArrowVertex1[j][k];
+                                if(k == 0) ArrowVertex2[j][k] += 0.5; //x軸方向に+0.5ずらす
+                            }
+                        }
                     }else if(belt[i][SPEED] < 0.0){ //速度が負の場合
-                        ArrowVertex[0][0] = xp + 1.0, ArrowVertex[0][1] = yp + 1.0, ArrowVertex[0][2] = 0.01;
-                        ArrowVertex[1][0] = xp, ArrowVertex[1][1] = yp + 0.5, ArrowVertex[1][2] = 0.01;
-                        ArrowVertex[2][0] = xp + 1.0, ArrowVertex[2][1] = yp, ArrowVertex[2][2] = 0.01;
+                        ArrowVertex1[0][0] = xp + 1.0, ArrowVertex1[0][1] = yp + 1.0, ArrowVertex1[0][2] = 0.01;
+                        ArrowVertex1[1][0] = xp + 0.5, ArrowVertex1[1][1] = yp + 0.5, ArrowVertex1[1][2] = 0.01;
+                        ArrowVertex1[2][0] = xp + 1.0, ArrowVertex1[2][1] = yp, ArrowVertex1[2][2] = 0.01;
+                        
+                        for(j=0;j<3;j++){
+                            for(k=0;k<3;k++){
+                                ArrowVertex2[j][k] = ArrowVertex1[j][k];
+                                if(k == 0) ArrowVertex2[j][k] -= 0.5; //x軸方向に-0.5ずらす
+                            }
+                        }
                     }
                 }else if(belt[i][DIRECTION] == Y_DIR){ //y方向のベルトコンベアの場合
                     if(belt[i][SPEED] > 0.0){ //速度が正の場合
-                        ArrowVertex[0][0] = xp + 1.0, ArrowVertex[0][1] = yp, ArrowVertex[0][2] = 0.01;
-                        ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp + 1.0, ArrowVertex[1][2] = 0.01;
-                        ArrowVertex[2][0] = xp, ArrowVertex[2][1] = yp, ArrowVertex[2][2] = 0.01;
+                        ArrowVertex1[0][0] = xp + 1.0, ArrowVertex1[0][1] = yp, ArrowVertex1[0][2] = 0.01;
+                        ArrowVertex1[1][0] = xp + 0.5, ArrowVertex1[1][1] = yp + 0.5, ArrowVertex1[1][2] = 0.01;
+                        ArrowVertex1[2][0] = xp, ArrowVertex1[2][1] = yp, ArrowVertex1[2][2] = 0.01;
+                        
+                        for(j=0;j<3;j++){
+                            for(k=0;k<3;k++){
+                                ArrowVertex2[j][k] = ArrowVertex1[j][k];
+                                if(k == 1) ArrowVertex2[j][k] += 0.5; //y軸方向に+0.5ずらす
+                            }
+                        }
                     }else if(belt[i][SPEED] < 0.0){ //速度が負の場合
-                        ArrowVertex[0][0] = xp, ArrowVertex[0][1] = yp + 1.0,  ArrowVertex[0][2] = 0.01;
-                        ArrowVertex[1][0] = xp + 0.5, ArrowVertex[1][1] = yp, ArrowVertex[1][2] = 0.01;
-                        ArrowVertex[2][0] = xp + 1.0, ArrowVertex[2][1] = yp + 1.0, ArrowVertex[2][2] = 0.01;
+                        ArrowVertex1[0][0] = xp, ArrowVertex1[0][1] = yp + 1.0,  ArrowVertex1[0][2] = 0.01;
+                        ArrowVertex1[1][0] = xp + 0.5, ArrowVertex1[1][1] = yp + 0.5, ArrowVertex1[1][2] = 0.01;
+                        ArrowVertex1[2][0] = xp + 1.0, ArrowVertex1[2][1] = yp + 1.0, ArrowVertex1[2][2] = 0.01;
+                        
+                        for(j=0;j<3;j++){
+                            for(k=0;k<3;k++){
+                                ArrowVertex2[j][k] = ArrowVertex1[j][k];
+                                if(k == 1) ArrowVertex2[j][k] -= 0.5; //y軸方向に-0.5ずらす
+                            }
+                        }
                     }
                 }
                 
                 glBegin(GL_LINE_STRIP);
-                for(j = 0; j < 3; j++) glVertex3dv(ArrowVertex[j]); //三角形を描写
+                for(j = 0; j < 3; j++){ //1個目の三角形を描写
+                    glVertex3dv(ArrowVertex1[j]);
+                }
                 glEnd();
+                
+                glBegin(GL_LINE_STRIP);
+                for(j = 0; j < 3; j++){ //2個目の三角形を描写
+                    glVertex3dv(ArrowVertex2[j]);
+                }
+                glEnd();
+                
             }
         }
     }
