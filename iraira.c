@@ -57,11 +57,13 @@ int collision()
 void myTimerFunc(int value)
 {
 	double MARGIN = 0.05;
+	double max_speed;
 	int i;
 	int fric = 0;
 	for(i=0;i<fricindex;i++){
 		if(friction[i][0]<x&&x<friction[i][1]&&friction[i][2]<y&&y<friction[i][3]) fric = i;
 	}
+	max_speed = friction[fric][4]*2.0;
 	int bt = 0;
 	for(i=0;i<beltindex;i++){
 		if(belt[i][X_FROM]<x&&x<belt[i][X_TO]&&belt[i][Y_FROM]<y&&y<belt[i][Y_TO]) bt = i;
@@ -96,19 +98,24 @@ void myTimerFunc(int value)
 	if (x == X && x_speed > 0) x_speed = 0.0;
 
 	if (x_speed > 0.0) {
-		x_speed -= friction[fric][4]/M/INERTIA;
+		x_speed -= 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(x_speed<0.0) x_speed = 0.0;
 	} else {
-		x_speed += friction[fric][4]/M/INERTIA;
+		x_speed += 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(x_speed>0.0) x_speed = 0.0;
 	}
 	if (y_speed > 0.0) {
-		y_speed -= friction[fric][4]/M/INERTIA;
+		y_speed -= 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(y_speed<0.0) y_speed = 0.0;
 	} else {
-		y_speed += friction[fric][4]/M/INERTIA;
+		y_speed += 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(y_speed>0.0) y_speed = 0.0;
 	}
+
+	if(x_speed > max_speed) x_speed = max_speed;
+	if(y_speed > max_speed) y_speed = max_speed;
+	if(x_speed < -max_speed) x_speed = -max_speed;
+	if(y_speed < -max_speed) y_speed = -max_speed;
 
 
 	x += x_speed;
@@ -282,9 +289,9 @@ void timeKeeper(){
 			break;
 	}
 	int passtime;
-	passtime = difftime(time(NULL), start);
+	passtime = difftime(time(NULL), start); 
 	sprintf(message[1], "%d", TIMELIMIT - passtime);
-	if(passtime > TIMELIMIT){
+	if(passtime >= TIMELIMIT){
 		sprintf(message[0], "Time Up!");
 		status = TIMEUP;
 	}
