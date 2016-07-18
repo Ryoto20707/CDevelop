@@ -28,6 +28,7 @@ void gameStart(); //ゲーム開始
 char message[][36] = {"Start!", ""}; // メッセージエリアに表示する文字列
 int jumpflag = 0;
 int status  = 0;
+double lookat_z = 1.5;
 
 double x_speed = 0.0;
 double y_speed = 0.0;
@@ -57,16 +58,32 @@ int collision()
 void myTimerFunc(int value)
 {
 	double MARGIN = 0.05;
+	double max_speed;
 	int i;
 	int fric = 0;
 	for(i=0;i<fricindex;i++){
 		if(friction[i][0]<x&&x<friction[i][1]&&friction[i][2]<y&&y<friction[i][3]) fric = i;
 	}
+	max_speed = friction[fric][4]*2.0;
 	int bt = 0;
 	for(i=0;i<beltindex;i++){
 		if(belt[i][X_FROM]<x&&x<belt[i][X_TO]&&belt[i][Y_FROM]<y&&y<belt[i][Y_TO]) bt = i;
 	}
 	int bt_direction = (int)belt[bt][DIRECTION];
+
+	// ベルトコンベア
+	if(bt_direction==X_DIR){
+		x += belt[bt][SPEED];
+		if (collision())x -= belt[bt][SPEED];
+		//ここを変更する
+		if ((X - 1)*L < x - MARGIN)x -= belt[bt][SPEED];
+	}else if(bt_direction==Y_DIR){
+		y += belt[bt][SPEED];
+		if (collision())y -= belt[bt][SPEED];
+		//ここを変更する
+		if (Y*L < y - MARGIN)y -= belt[bt][SPEED];
+	}
+	if(y>Y-MARGIN) gameClear();
 
 	// 上キー
 	if (mySpecialValue & (1 << 0))
@@ -92,23 +109,25 @@ void myTimerFunc(int value)
 		y_speed -= friction[fric][4]/M;
 	}
 
-	if (x == 0 && x_speed < 0) x_speed = 0.0;
-	if (x == X && x_speed > 0) x_speed = 0.0;
-
 	if (x_speed > 0.0) {
-		x_speed -= friction[fric][4]/M/INERTIA;
+		x_speed -= 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(x_speed<0.0) x_speed = 0.0;
 	} else {
-		x_speed += friction[fric][4]/M/INERTIA;
+		x_speed += 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(x_speed>0.0) x_speed = 0.0;
 	}
 	if (y_speed > 0.0) {
-		y_speed -= friction[fric][4]/M/INERTIA;
+		y_speed -= 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(y_speed<0.0) y_speed = 0.0;
 	} else {
-		y_speed += friction[fric][4]/M/INERTIA;
+		y_speed += 0.0000005/(friction[fric][4]*friction[fric][4]);
 		if(y_speed>0.0) y_speed = 0.0;
 	}
+
+	if(x_speed > max_speed) x_speed = max_speed;
+	if(y_speed > max_speed) y_speed = max_speed;
+	if(x_speed < -max_speed) x_speed = -max_speed;
+	if(y_speed < -max_speed) y_speed = -max_speed;
 
 
 	x += x_speed;
@@ -121,7 +140,8 @@ void myTimerFunc(int value)
 	if ((X - 1)*L < x - MARGIN)x = (double)(X-1);
 	if (0 * L > y + MARGIN)y = 0.0;
 
-	
+	if (x < 0.05   && x_speed < 0.0) x_speed = 0.0;
+	if (x > X-1-0.05 && x_speed > 0.0) x_speed = 0.0;
 
 	// 重力
 	if (jumpflag == 1 && z > 0)
@@ -141,23 +161,9 @@ void myTimerFunc(int value)
 		}
 	}
 
-	// ベルトコンベア
-	if(bt_direction==X_DIR){
-		x += belt[bt][SPEED];
-		if (collision())x -= belt[bt][SPEED];
-		//ここを変更する
-		if ((X - 1)*L < x - MARGIN)x -= belt[bt][SPEED];
-	}else if(bt_direction==Y_DIR){
-		y += belt[bt][SPEED];
-		if (collision())y -= belt[bt][SPEED];
-		//ここを変更する
-		if (Y*L < y - MARGIN)y -= belt[bt][SPEED];
-	}
-	if(y>Y-MARGIN) gameClear();
-
 	//視点を移動
 	glLoadIdentity();
-	gluLookAt(0.0 + x, -10.0 + y, 2.0, 0.0 + x, 0.0 + y, 1.5, 0.0, 0.0, 1.0);
+	gluLookAt(0.0 + x, -10.0 + y, lookat_z, 0.0 + x, 0.0 + y, 1.5, 0.0, 0.0, 1.0);
 
 	glutTimerFunc(10, myTimerFunc, 0);
 
@@ -178,6 +184,15 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 			z += v;
 		}
 		break;
+	case 'a':
+		if(lookat_z < 5.0) {
+			lookat_z += 0.1;
+		}
+		break;
+	case 's':
+		if(lookat_z > 1.0) {
+			lookat_z -= 0.1;
+		}
 	}
 }
 
@@ -282,9 +297,9 @@ void timeKeeper(){
 			break;
 	}
 	int passtime;
-	passtime = difftime(time(NULL), start);
+	passtime = difftime(time(NULL), start); 
 	sprintf(message[1], "%d", TIMELIMIT - passtime);
-	if(passtime > TIMELIMIT){
+	if(passtime >= TIMELIMIT){
 		sprintf(message[0], "Time Up!");
 		status = TIMEUP;
 	}
@@ -296,7 +311,7 @@ void gameover(){
 }
 
 void gameClear() {
-	sprintf(message[0], "Clear!");
+	sprintf(message[0], "Clear! Press space to Restart");
 	status = CLEAR;
 }
 
