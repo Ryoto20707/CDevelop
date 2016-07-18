@@ -21,9 +21,10 @@ INERTIA:摩擦係数の逆数(みたいなイメージ)→大きくするとす�
 
 
 コンパイル方法(mac)
-cc iraira.c -mmacosx-version-min=10.8 -framework GLUT -framework OpenGL
+cc iraira.c map.c -mmacosx-version-min=10.8 -framework GLUT -framework OpenGL
 実行方法
 ./a.out
+コンパイル時にWarningが出るけど無視してください。
 
 
 >全員へ
